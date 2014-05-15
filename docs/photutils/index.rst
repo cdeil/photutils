@@ -17,6 +17,24 @@ It is possible that `photutils` will eventually be merged into ``astropy`` as
 ``astropy.photometry``.
 
 
+Source Detection and Segmentation
+---------------------------------
+
+.. toctree:: detection.rst
+
+
+Source Morphology
+-----------------
+
+.. toctree:: morphology.rst
+
+
+Utils
+-----
+
+.. toctree:: utils.rst
+
+
 Getting Started
 ---------------
 
