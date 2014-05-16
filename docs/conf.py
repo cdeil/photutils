@@ -31,6 +31,18 @@ from astropy.sphinx.conf import *
 
 # -- General configuration ----------------------------------------------------
 
+# We don't have references to `h5py` ...
+# removing it so it the intersphinx mapping file isn't downloaded.
+del intersphinx_mapping['h5py']
+
+# We currently want to link to the latest development version of the astropy docs,
+# so we override the `intersphinx_mapping` entry pointing to the stable docs version
+# that is listed in `astropy/sphinx/conf.py`.
+intersphinx_mapping['astropy'] = ('http://docs.astropy.org/en/latest/', None)
+
+intersphinx_mapping['skimage'] = ('http://scikit-image.org/docs/stable/', None)
+
+
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.1'
 
