@@ -67,7 +67,8 @@ def elliptical_overlap_grid(double xmin, double xmax, double ymin, double ymax,
     frac : `~numpy.ndarray`
         2-d array giving the fraction of the overlap.
     """
-
+    from pprint import pprint
+    pprint(locals())
     cdef unsigned int i, j
     cdef double x, y, dx, dy
     cdef double bxmin, bxmax, bymin, bymax
@@ -104,7 +105,13 @@ def elliptical_overlap_grid(double xmin, double xmax, double ymin, double ymax,
                 pymax = pymin + dy
                 if pymax > bymin and pymin < bymax:
                     if use_exact:
-                        frac[j, i] = elliptical_overlap_single_exact(pxmin, pymin, pxmax, pymax, rx, ry, theta) * norm
+                        try:
+                            frac[j, i] = elliptical_overlap_single_exact(pxmin, pymin, pxmax, pymax, rx, ry, theta) * norm
+                            #print('42')
+                        except ZeroDivisionError:
+                            raise
+
+                        #print('frac[j, i] = {}'.format(frac[j, i]))
                     else:
                         frac[j, i] = elliptical_overlap_single_subpixel(pxmin, pymin, pxmax, pymax, rx, ry, theta, subpixels) * norm
     return frac
@@ -157,7 +164,7 @@ cdef double elliptical_overlap_single_subpixel(double x0, double y0,
     return frac / (subpixels * subpixels)
 
 
-cdef double elliptical_overlap_single_exact(double xmin, double ymin,
+cdef elliptical_overlap_single_exact(double xmin, double ymin,
                                             double xmax, double ymax,
                                             double rx, double ry,
                                             double theta):
@@ -181,7 +188,16 @@ cdef double elliptical_overlap_single_exact(double xmin, double ymin,
     x4, y4 = (xmin * cos_m_theta - ymax * sin_m_theta) / rx, (xmin * sin_m_theta + ymax * cos_m_theta) / ry
 
     # Divide resulting quadrilateral into two triangles and find intersection with unit circle
-    return (overlap_area_triangle_unit_circle(x1, y1, x2, y2, x3, y3) \
-          + overlap_area_triangle_unit_circle(x1, y1, x4, y4, x3, y3)) \
-          * scale
+    print('11111')
+    a1 = scale * overlap_area_triangle_unit_circle(x1, y1, x2, y2, x3, y3)
+    print('222222')
+    a2 = scale * overlap_area_triangle_unit_circle(x1, y1, x4, y4, x3, y3)
+    res = a1 + a2
+    if res > 1.1:
+        from pprint import pprint
+        pprint(locals())
+        print('BAD ONE FOUND')
+        print(res)
+        raise SystemExit
+    return res
 

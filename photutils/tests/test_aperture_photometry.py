@@ -527,6 +527,6 @@ def test_ellipse_exact_grid():
 
     aperture = EllipticalAperture((x, y), r, r, 0.)
     t = aperture_photometry(data, aperture, method='exact')
-    actual = t['aperture_sum'][0]
-    expected = np.pi * r ** 2
+    actual = t['aperture_sum'][0] / (np.pi * r ** 2)
+    expected = 1
     assert_allclose(actual, expected)

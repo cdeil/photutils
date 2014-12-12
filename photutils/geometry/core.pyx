@@ -1,6 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 
-# The functions here are core geomet
+# The functions here are core geometry
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import numpy as np
@@ -289,15 +289,25 @@ cdef double overlap_area_triangle_unit_circle(double x1, double y1, double x2, d
     in3 = d3 < 1
 
     # Determine which vertices are on the circle
-    on1 = fabs(d1 - 1) < 1.e-10
-    on2 = fabs(d2 - 1) < 1.e-10
-    on3 = fabs(d3 - 1) < 1.e-10
+    MY_EPS = 1e-13
+    on1 = fabs(d1 - 1) < MY_EPS
+    on2 = fabs(d2 - 1) < MY_EPS
+    on3 = fabs(d3 - 1) < MY_EPS
+
+    print('hi')
+    from pprint import pprint
+    pprint(locals())
+
+    #if d1 > 1:
+    #    return 0
 
     if on3 or in3:  # triangle is completely in circle
 
         area = area_triangle(x1, y1, x2, y2, x3, y3)
+        print('1')
 
     elif in2 or on2:
+        print('2')
 
         # If vertex 1 or 2 are on the edge of the circle, then we use the dot
         # product to vertex 3 to determine whether an intersection takes place.
@@ -322,6 +332,7 @@ cdef double overlap_area_triangle_unit_circle(double x1, double y1, double x2, d
             area = area_arc_unit(x1, y1, x2, y2)
 
     elif in1:
+        print("3")
         # Check for intersections of far side with circle
         inter = circle_segment(x2, y2, x3, y3)
         pt1 = inter.p1
@@ -329,6 +340,7 @@ cdef double overlap_area_triangle_unit_circle(double x1, double y1, double x2, d
         pt3 = circle_segment_single2(x1, y1, x2, y2)
         pt4 = circle_segment_single2(x1, y1, x3, y3)
         if pt1.x > 1.:  # indicates no intersection
+            print('mmmm')
             if in_triangle(0, 0, x1, y1, x2, y2, x3, y3) and not in_triangle(0, 0, x1, y1, pt3.x, pt3.y, pt4.x, pt4.y):
                 area = area_triangle(x1, y1, pt3.x, pt3.y, pt4.x, pt4.y) \
                      + (PI - area_arc_unit(pt3.x, pt3.y, pt4.x, pt4.y))
@@ -338,12 +350,16 @@ cdef double overlap_area_triangle_unit_circle(double x1, double y1, double x2, d
         else:
             if fabs(pt2.x - x2) < fabs(pt1.x - x2):
                 pt1, pt2 = pt2, pt1
-            area = area_triangle(x1, y1, pt3.x, pt3.y, pt1.x, pt1.y) \
-                 + area_triangle(x1, y1, pt1.x, pt1.y, pt2.x, pt2.y) \
-                 + area_triangle(x1, y1, pt2.x, pt2.y, pt4.x, pt4.y) \
-                 + area_arc_unit(pt1.x, pt1.y, pt3.x, pt3.y) \
-                 + area_arc_unit(pt2.x, pt2.y, pt4.x, pt4.y)
+            _a1 = area_triangle(x1, y1, pt3.x, pt3.y, pt1.x, pt1.y)
+            _a2 = area_triangle(x1, y1, pt1.x, pt1.y, pt2.x, pt2.y)
+            _a3 = area_triangle(x1, y1, pt2.x, pt2.y, pt4.x, pt4.y)
+            _a4 = area_arc_unit(pt1.x, pt1.y, pt3.x, pt3.y)
+            _a5 = area_arc_unit(pt2.x, pt2.y, pt4.x, pt4.y)
+            area = _a1 + _a2 + _a3 + _a4 + _a5
+            print('jjjj')
+            pprint(locals())
     else:
+        print('4')
         inter = circle_segment(x1, y1, x2, y2)
         pt1 = inter.p1
         pt2 = inter.p2
@@ -353,22 +369,30 @@ cdef double overlap_area_triangle_unit_circle(double x1, double y1, double x2, d
         inter = circle_segment(x3, y3, x1, y1)
         pt5 = inter.p1
         pt6 = inter.p2
+        from pprint import pprint
+        pprint(locals())
         if pt1.x <= 1.:
+            #print('aa')
             xp, yp = 0.5 * (pt1.x + pt2.x), 0.5 * (pt1.y + pt2.y)
             area = overlap_area_triangle_unit_circle(x1, y1, x3, y3, xp, yp) \
                  + overlap_area_triangle_unit_circle(x2, y2, x3, y3, xp, yp)
         elif pt3.x <= 1.:
+            #print('bb')
             xp, yp = 0.5 * (pt3.x + pt4.x), 0.5 * (pt3.y + pt4.y)
             area = overlap_area_triangle_unit_circle(x3, y3, x1, y1, xp, yp) \
                  + overlap_area_triangle_unit_circle(x2, y2, x1, y1, xp, yp)
         elif pt5.x <= 1.:
+            #print('cc')
             xp, yp = 0.5 * (pt5.x + pt6.x), 0.5 * (pt5.y + pt6.y)
             area = overlap_area_triangle_unit_circle(x1, y1, x2, y2, xp, yp) \
                  + overlap_area_triangle_unit_circle(x3, y3, x2, y2, xp, yp)
         else:  # no intersections
+            print('dd')
             if in_triangle(0., 0., x1, y1, x2, y2, x3, y3):
+                #print('ee')
                 return PI
             else:
+                #print('qq')
                 return 0.
-
+    print('area: {0}'.format(area))
     return area
